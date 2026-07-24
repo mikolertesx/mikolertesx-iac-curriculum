@@ -37,3 +37,27 @@ resource "aws_s3_bucket_website_configuration" "website_static_config" {
     key = "error.html"
   }
 }
+
+resource "aws_s3_object" "indexFile" {
+  bucket = local.s3_bucket_name
+  key = "index.html"
+  source = "./src/index.html"
+}
+
+resource "aws_s3_object" "stylesFile" {
+  bucket = local.s3_bucket_name
+  key = "styles.css"
+  source = "./src/styles.css"
+}
+
+resource "aws_s3_object" "imageFile" {
+  bucket = local.s3_bucket_name
+  key = "portrait.jpeg"
+  source = "./src/portrait.jpeg"
+}
+
+resource "aws_s3_object" "jsFile" {
+  bucket = local.s3_bucket_name
+  key = "vistors.js"
+  source = "./src/visitors.js"
+}
