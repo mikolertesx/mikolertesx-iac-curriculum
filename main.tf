@@ -14,19 +14,13 @@ provider "aws" {
 
 locals {
   s3_bucket_name = "mikolertesx-curriculum-1447"
-  domain_name="miguel-gro.click"
+  domain_name    = "miguel-gro.click"
 
   content_types = {
     html = "text/html"
     css  = "text/css"
     js   = "application/javascript"
     jpeg = "image/jpeg"
-    jpg  = "image/jpeg"
-    png  = "image/png"
-    svg  = "image/svg+xml"
-    ico  = "image/x-icon"
-    json = "application/json"
-    txt  = "text/plain"
   }
 
   s3_origin_id = "s3-website-origin"
@@ -42,19 +36,6 @@ resource "aws_s3_bucket" "website_host_bucket" {
   }
 }
 
-resource "aws_s3_bucket_website_configuration" "website_static_config" {
-  bucket = local.s3_bucket_name
-
-  index_document {
-    suffix = "index.html"
-  }
-
-  error_document {
-    key = "error.html"
-  }
-}
-
-# Remove this once we have CloudFront
 resource "aws_s3_bucket_public_access_block" "remove_public_access_block" {
   bucket = local.s3_bucket_name
 
@@ -67,7 +48,6 @@ resource "aws_s3_bucket_public_access_block" "remove_public_access_block" {
 resource "aws_s3_bucket_policy" "apply_allow_public_access_policy" {
   bucket = local.s3_bucket_name
   policy = data.aws_iam_policy_document.allow_public_access_policy.json
-
 }
 
 resource "aws_s3_object" "website_files" {
@@ -94,7 +74,7 @@ resource "aws_cloudfront_origin_access_control" "default" {
 resource "aws_cloudfront_distribution" "s3_distribution" {
   enabled             = true
   default_root_object = "index.html"
-  aliases = [local.domain_name, "www.${local.domain_name}"]
+  aliases             = [local.domain_name, "www.${local.domain_name}"]
 
   origin {
     domain_name              = aws_s3_bucket.website_host_bucket.bucket_domain_name
@@ -102,7 +82,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     origin_id                = local.s3_origin_id
   }
   default_cache_behavior {
-    allowed_methods  = ["GET", "HEAD", "OPTIONS"]
+    allowed_methods  = ["GET", "HEAD"]
     cached_methods   = ["GET", "HEAD"]
     target_origin_id = local.s3_origin_id
 
@@ -129,32 +109,90 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
 
   viewer_certificate {
     acm_certificate_arn = aws_acm_certificate.site_certificate.arn
-    ssl_support_method = "sni-only"
+    ssl_support_method  = "sni-only"
   }
 }
 
 resource "aws_acm_certificate" "site_certificate" {
-  domain_name = local.domain_name
+  domain_name       = local.domain_name
   validation_method = "DNS"
   subject_alternative_names = [
     "www.${local.domain_name}"
   ]
 }
 
+data "aws_route53_zone" "site" {
+  name         = local.domain_name
+  private_zone = false
+}
+
+resource "aws_route53_record" "cert_validation" {
+  for_each = {
+    for dvo in aws_acm_certificate.site_certificate.domain_validation_options : dvo.domain_name => {
+      name   = dvo.resource_record_name
+      record = dvo.resource_record_value
+      type   = dvo.resource_record_type
+    }
+  }
+
+  allow_overwrite = true
+  zone_id         = data.aws_route53_zone.site.zone_id
+  name            = each.value.name
+  type            = each.value.type
+  ttl             = 60
+  records         = [each.value.record]
+}
+
+resource "aws_route53_record" "apex" {
+  zone_id = data.aws_route53_zone.site.zone_id
+  name    = local.domain_name
+  type    = "A"
+
+  alias {
+    name                   = aws_cloudfront_distribution.s3_distribution.domain_name
+    zone_id                = aws_cloudfront_distribution.s3_distribution.hosted_zone_id
+    evaluate_target_health = false
+  }
+}
+
+resource "aws_route53_record" "www" {
+  zone_id = data.aws_route53_zone.site.zone_id
+  name    = "www.${local.domain_name}"
+  type    = "A"
+
+  alias {
+    name                   = aws_cloudfront_distribution.s3_distribution.domain_name
+    zone_id                = aws_cloudfront_distribution.s3_distribution.hosted_zone_id
+    evaluate_target_health = false
+  }
+}
+
+
 data "aws_iam_policy_document" "allow_public_access_policy" {
   statement {
-    sid    = "PublicReadGetObject"
+    sid    = "AllowOnlyCloudFront${aws_cloudfront_distribution.s3_distribution.id}ToDeliverS3Content"
     effect = "Allow"
+
     actions = [
       "s3:GetObject"
     ]
+
     principals {
-      type        = "AWS"
-      identifiers = ["*"]
+      type        = "Service"
+      identifiers = ["cloudfront.amazonaws.com"]
     }
+
     resources = [
-      aws_s3_bucket.website_host_bucket.arn,
       "${aws_s3_bucket.website_host_bucket.arn}/*"
     ]
+
+    # Test so that only one distribution can deliver it.
+    condition {
+      test = "StringEquals"
+      variable = "AWS:SourceArn"
+      values = [
+        aws_cloudfront_distribution.s3_distribution.arn
+      ]
+    }
   }
 }
