@@ -77,7 +77,7 @@ resource "aws_s3_object" "imageFile" {
 
 resource "aws_s3_object" "jsFile" {
   bucket       = local.s3_bucket_name
-  key          = "vistors.js"
+  key          = "visitors.js"
   source       = "./src/visitors.js"
   content_type = "text/javascript"
 
