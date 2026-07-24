@@ -54,33 +54,13 @@ resource "aws_s3_bucket_policy" "apply_allow_public_access_policy" {
 
 }
 
-resource "aws_s3_object" "indexFile" {
-  bucket       = local.s3_bucket_name
-  key          = "index.html"
-  source       = "./src/index.html"
-  content_type = "text/html"
-}
+resource "aws_s3_object" "website_files" {
+  for_each = fileset("./src", "**/*")
 
-resource "aws_s3_object" "stylesFile" {
-  bucket       = local.s3_bucket_name
-  key          = "styles.css"
-  source       = "./src/styles.css"
-  content_type = "text/css"
-}
-
-resource "aws_s3_object" "imageFile" {
-  bucket       = local.s3_bucket_name
-  key          = "portrait.jpeg"
-  source       = "./src/portrait.jpeg"
-  content_type = "image/jpeg"
-}
-
-resource "aws_s3_object" "jsFile" {
-  bucket       = local.s3_bucket_name
-  key          = "visitors.js"
-  source       = "./src/visitors.js"
-  content_type = "text/javascript"
-
+  bucket = local.s3_bucket_name
+  key    = each.value
+  source = "./src/${each.value}"
+  etag = filemd5("./src/${each.value}")
 }
 
 data "aws_iam_policy_document" "allow_public_access_policy" {
