@@ -16,17 +16,19 @@ locals {
   s3_bucket_name = "mikolertesx-curriculum-1447"
 
   content_types = {
-    html  = "text/html"
-    css   = "text/css"
-    js    = "application/javascript"
-    jpeg  = "image/jpeg"
-    jpg   = "image/jpeg"
-    png   = "image/png"
-    svg   = "image/svg+xml"
-    ico   = "image/x-icon"
-    json  = "application/json"
-    txt   = "text/plain"
+    html = "text/html"
+    css  = "text/css"
+    js   = "application/javascript"
+    jpeg = "image/jpeg"
+    jpg  = "image/jpeg"
+    png  = "image/png"
+    svg  = "image/svg+xml"
+    ico  = "image/x-icon"
+    json = "application/json"
+    txt  = "text/plain"
   }
+
+  s3_origin_id = "s3-website-origin"
 }
 
 resource "aws_s3_bucket" "website_host_bucket" {
@@ -55,10 +57,10 @@ resource "aws_s3_bucket_website_configuration" "website_static_config" {
 resource "aws_s3_bucket_public_access_block" "remove_public_access_block" {
   bucket = local.s3_bucket_name
 
-  block_public_acls       = false
-  block_public_policy     = false
-  ignore_public_acls      = false
-  restrict_public_buckets = false
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
 }
 
 resource "aws_s3_bucket_policy" "apply_allow_public_access_policy" {
@@ -73,12 +75,59 @@ resource "aws_s3_object" "website_files" {
   bucket = local.s3_bucket_name
   key    = each.value
   source = "./src/${each.value}"
-  etag = filemd5("./src/${each.value}")
+  etag   = filemd5("./src/${each.value}")
   content_type = lookup(
     local.content_types,
-    lower(element(split(".", each.value), length(split(".", each.value)) -1)),
+    lower(element(split(".", each.value), length(split(".", each.value)) - 1)),
     "application/octet-stream"
   )
+}
+
+resource "aws_cloudfront_origin_access_control" "default" {
+  name                              = "default AOC"
+  origin_access_control_origin_type = "s3"
+  signing_behavior                  = "always"
+  signing_protocol                  = "sigv4"
+}
+
+resource "aws_cloudfront_distribution" "s3_distribution" {
+  enabled             = true
+  default_root_object = "index.html"
+
+  origin {
+    domain_name              = aws_s3_bucket.website_host_bucket.bucket_domain_name
+    origin_access_control_id = aws_cloudfront_origin_access_control.default.id
+    origin_id                = local.s3_origin_id
+  }
+  default_cache_behavior {
+    allowed_methods  = ["GET", "HEAD", "OPTIONS"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = local.s3_origin_id
+
+    viewer_protocol_policy = "redirect-to-https"
+    min_ttl                = 0
+    default_ttl            = 3600
+    max_ttl                = 86400
+
+    forwarded_values {
+      query_string = false
+
+      cookies {
+        forward = "none"
+      }
+    }
+
+  }
+
+  restrictions {
+    geo_restriction {
+      restriction_type = "none"
+    }
+  }
+
+  viewer_certificate {
+    cloudfront_default_certificate = true
+  }
 }
 
 data "aws_iam_policy_document" "allow_public_access_policy" {
