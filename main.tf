@@ -14,6 +14,19 @@ provider "aws" {
 
 locals {
   s3_bucket_name = "mikolertesx-curriculum-1447"
+
+  content_types = {
+    html  = "text/html"
+    css   = "text/css"
+    js    = "application/javascript"
+    jpeg  = "image/jpeg"
+    jpg   = "image/jpeg"
+    png   = "image/png"
+    svg   = "image/svg+xml"
+    ico   = "image/x-icon"
+    json  = "application/json"
+    txt   = "text/plain"
+  }
 }
 
 resource "aws_s3_bucket" "website_host_bucket" {
@@ -61,6 +74,11 @@ resource "aws_s3_object" "website_files" {
   key    = each.value
   source = "./src/${each.value}"
   etag = filemd5("./src/${each.value}")
+  content_type = lookup(
+    local.content_types,
+    lower(element(split(".", each.value), length(split(".", each.value)) -1)),
+    "application/octet-stream"
+  )
 }
 
 data "aws_iam_policy_document" "allow_public_access_policy" {
