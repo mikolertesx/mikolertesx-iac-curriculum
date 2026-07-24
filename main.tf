@@ -14,6 +14,7 @@ provider "aws" {
 
 locals {
   s3_bucket_name = "mikolertesx-curriculum-1447"
+  domain_name="miguel-gro.click"
 
   content_types = {
     html = "text/html"
@@ -93,6 +94,7 @@ resource "aws_cloudfront_origin_access_control" "default" {
 resource "aws_cloudfront_distribution" "s3_distribution" {
   enabled             = true
   default_root_object = "index.html"
+  aliases = [local.domain_name, "www.${local.domain_name}"]
 
   origin {
     domain_name              = aws_s3_bucket.website_host_bucket.bucket_domain_name
@@ -126,8 +128,17 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   }
 
   viewer_certificate {
-    cloudfront_default_certificate = true
+    acm_certificate_arn = aws_acm_certificate.site_certificate.arn
+    ssl_support_method = "sni-only"
   }
+}
+
+resource "aws_acm_certificate" "site_certificate" {
+  domain_name = local.domain_name
+  validation_method = "DNS"
+  subject_alternative_names = [
+    "www.${local.domain_name}"
+  ]
 }
 
 data "aws_iam_policy_document" "allow_public_access_policy" {
