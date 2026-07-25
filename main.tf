@@ -15,53 +15,36 @@ provider "aws" {
 locals {
   s3_bucket_name = "mikolertesx-curriculum-1447"
   domain_name    = "miguel-gro.click"
-
-  content_types = {
-    html = "text/html"
-    css  = "text/css"
-    js   = "application/javascript"
-    jpeg = "image/jpeg"
-  }
-
   s3_origin_id = "s3-website-origin"
 }
 
-resource "aws_s3_bucket" "website_host_bucket" {
-  bucket_namespace = "global"
-  bucket           = local.s3_bucket_name
+module "website_s3" {
+  source = "./modules/webBucket"
 
-  tags = {
-    Name        = "website host bucket"
-    Environment = "Prod"
+  s3_bucket_name = local.s3_bucket_name
+}
+
+data "aws_iam_policy_document" "allow_public_access_policy" {
+  statement {
+    sid    = "AllowOnlyCloudFront..."
+    effect = "Allow"
+    actions = ["s3:GetObject"]
+    principals {
+      type        = "Service"
+      identifiers = ["cloudfront.amazonaws.com"]
+    }
+    resources = ["${module.website_s3.s3_bucket_arn}/*"]
+    condition {
+      test     = "StringEquals"
+      variable = "AWS:SourceArn"
+      values   = [aws_cloudfront_distribution.s3_distribution.arn]
+    }
   }
 }
 
-resource "aws_s3_bucket_public_access_block" "remove_public_access_block" {
-  bucket = local.s3_bucket_name
-
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
-}
-
 resource "aws_s3_bucket_policy" "apply_allow_public_access_policy" {
-  bucket = local.s3_bucket_name
+  bucket = module.website_s3.s3_bucket_id
   policy = data.aws_iam_policy_document.allow_public_access_policy.json
-}
-
-resource "aws_s3_object" "website_files" {
-  for_each = fileset("./src", "**/*")
-
-  bucket = local.s3_bucket_name
-  key    = each.value
-  source = "./src/${each.value}"
-  etag   = filemd5("./src/${each.value}")
-  content_type = lookup(
-    local.content_types,
-    lower(element(split(".", each.value), length(split(".", each.value)) - 1)),
-    "application/octet-stream"
-  )
 }
 
 resource "aws_cloudfront_origin_access_control" "default" {
@@ -77,7 +60,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   aliases             = [local.domain_name, "www.${local.domain_name}"]
 
   origin {
-    domain_name              = aws_s3_bucket.website_host_bucket.bucket_domain_name
+    domain_name = module.website_s3.s3_bucket_domain_name
     origin_access_control_id = aws_cloudfront_origin_access_control.default.id
     origin_id                = local.s3_origin_id
   }
@@ -164,35 +147,5 @@ resource "aws_route53_record" "www" {
     name                   = aws_cloudfront_distribution.s3_distribution.domain_name
     zone_id                = aws_cloudfront_distribution.s3_distribution.hosted_zone_id
     evaluate_target_health = false
-  }
-}
-
-
-data "aws_iam_policy_document" "allow_public_access_policy" {
-  statement {
-    sid    = "AllowOnlyCloudFront${aws_cloudfront_distribution.s3_distribution.id}ToDeliverS3Content"
-    effect = "Allow"
-
-    actions = [
-      "s3:GetObject"
-    ]
-
-    principals {
-      type        = "Service"
-      identifiers = ["cloudfront.amazonaws.com"]
-    }
-
-    resources = [
-      "${aws_s3_bucket.website_host_bucket.arn}/*"
-    ]
-
-    # Test so that only one distribution can deliver it.
-    condition {
-      test = "StringEquals"
-      variable = "AWS:SourceArn"
-      values = [
-        aws_cloudfront_distribution.s3_distribution.arn
-      ]
-    }
   }
 }
