@@ -15,7 +15,7 @@ provider "aws" {
 locals {
   s3_bucket_name = "mikolertesx-curriculum-1447"
   domain_name    = "miguel-gro.click"
-  s3_origin_id = "s3-website-origin"
+  s3_origin_id   = "s3-website-origin"
 }
 
 module "website_s3" {
@@ -27,15 +27,15 @@ module "website_s3" {
 module "cloudfrontDistribution" {
   source = "./modules/cloudfrontDistribution"
 
-  domain_name = local.domain_name
-  s3_origin_id = local.s3_origin_id
+  domain_name    = local.domain_name
+  s3_origin_id   = local.s3_origin_id
   s3_domain_name = module.website_s3.s3_bucket_domain_name
 }
 
 data "aws_iam_policy_document" "allow_public_access_policy" {
   statement {
-    sid    = "AllowOnlyCloudFront..."
-    effect = "Allow"
+    sid     = "AllowOnlyCloudFront..."
+    effect  = "Allow"
     actions = ["s3:GetObject"]
     principals {
       type        = "Service"

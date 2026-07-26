@@ -1,10 +1,10 @@
 output "cloudFront_domain" {
-  value = module.cloudfrontDistribution.cloudfront_distribution_domain_name
+  value       = module.cloudfrontDistribution.cloudfront_distribution_domain_name
   description = "CloudFront distribution's domain name"
 }
 
 output "cloudfront_apex_domain" {
-  value = tolist(module.cloudfrontDistribution.cloudfront_aliases)[0]
+  value       = tolist(module.cloudfrontDistribution.cloudfront_aliases)[0]
   description = "CloudFront Apex domain"
 }
 

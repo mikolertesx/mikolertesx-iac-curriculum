@@ -11,7 +11,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   aliases             = [var.domain_name, "www.${var.domain_name}"]
 
   origin {
-    domain_name = var.s3_domain_name
+    domain_name              = var.s3_domain_name
     origin_access_control_id = aws_cloudfront_origin_access_control.default.id
     origin_id                = var.s3_origin_id
   }
