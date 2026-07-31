@@ -1,4 +1,4 @@
-import React from 'react';
+
 import portrait from '../../assets/portrait.jpeg';
 import { VisitorCount } from '../visitor-count';
 

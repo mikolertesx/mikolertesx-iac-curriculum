@@ -1,5 +1,7 @@
+import Section from "../components/Section";
+
 const CertificationSection = () => {
-    return <section className="mb-2">
+    return <Section>
         <h2>Certifications</h2>
 
         <article className="entry">
@@ -8,7 +10,7 @@ const CertificationSection = () => {
                 <span className="meta">Amazon Web Services</span>
             </div>
         </article>
-    </section>
+    </Section>
 };
 
 export default CertificationSection;

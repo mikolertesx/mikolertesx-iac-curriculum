@@ -1,7 +1,8 @@
+import Header from './components/Header';
+
 import CertificationSection from './sections/CertificationSection';
 import EducationSection from './sections/EducationSection';
 import ExperienceSection from './sections/ExperienceSection';
-import Header from './sections/Header';
 import SkillsSection from './sections/SkillsSection';
 import SummarySection from './sections/SummarySection';
 

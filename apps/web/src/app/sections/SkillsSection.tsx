@@ -1,5 +1,7 @@
+import Section from "../components/Section"
+
 const SkillsSection = () => {
-    return <section className="mb-2">
+    return <Section>
         <h2>Skills</h2>
         <ul className="skills">
             <li>JavaScript</li>
@@ -24,7 +26,7 @@ const SkillsSection = () => {
             <li>Code review</li>
             <li>Storybook</li>
         </ul>
-    </section>
+    </Section>
 };
 
 export default SkillsSection;

@@ -1,5 +1,7 @@
+import Section from "../components/Section";
+
 const SummarySection = () => {
-    return <section className="mb-2">
+    return <Section>
         <h2>Summary</h2>
         <p>
             Frontend developer with experience shipping React applications in
@@ -11,7 +13,7 @@ const SummarySection = () => {
             AWS Certified Solutions Architect Associate, with a focus on
             reliable, maintainable frontend systems and cost-aware cloud usage.
         </p>
-    </section>
+    </Section>
 };
 
 export default SummarySection;

@@ -1,5 +1,7 @@
+import Section from "../components/Section"
+
 const ExperienceSection = () => {
-    return <section className="mb-2">
+    return <Section>
         <h2>Experience</h2>
 
         <article className="entry">
@@ -76,7 +78,7 @@ const ExperienceSection = () => {
                 </li>
             </ul>
         </article>
-    </section>;
+    </Section>;
 };
 
 export default ExperienceSection;

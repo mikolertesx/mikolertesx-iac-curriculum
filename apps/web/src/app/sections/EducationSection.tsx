@@ -1,5 +1,7 @@
+import Section from "../components/Section"
+
 const EducationSection = () => {
-    return <section className="mb-2">
+    return <Section>
         <h2>Education</h2>
 
         <article className="entry">
@@ -12,7 +14,7 @@ const EducationSection = () => {
                 programming, systems, and automation.
             </p>
         </article>
-    </section>;
+    </Section>;
 };
 
 export default EducationSection;
