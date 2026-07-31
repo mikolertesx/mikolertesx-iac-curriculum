@@ -1,5 +1,5 @@
 const SummarySection = () => {
-    return <section className="section">
+    return <section className="mb-2">
         <h2>Summary</h2>
         <p>
             Frontend developer with experience shipping React applications in

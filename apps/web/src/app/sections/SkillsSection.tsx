@@ -1,5 +1,5 @@
 const SkillsSection = () => {
-    return <section className="section">
+    return <section className="mb-2">
         <h2>Skills</h2>
         <ul className="skills">
             <li>JavaScript</li>

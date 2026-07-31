@@ -1,5 +1,5 @@
 const CertificationSection = () => {
-    return <section className="section">
+    return <section className="mb-2">
         <h2>Certifications</h2>
 
         <article className="entry">

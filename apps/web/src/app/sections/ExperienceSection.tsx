@@ -1,5 +1,5 @@
 const ExperienceSection = () => {
-    return <section className="section">
+    return <section className="mb-2">
         <h2>Experience</h2>
 
         <article className="entry">
