@@ -1,0 +1,63 @@
+{
+  "name": "infra",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "infra",
+  "tags": ["type:infra", "scope:aws"],
+  "targets": {
+    "init": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "terraform init",
+        "cwd": "infra"
+      }
+    },
+    "fmt": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "terraform fmt -recursive",
+        "cwd": "infra"
+      }
+    },
+    "validate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "terraform validate",
+        "cwd": "infra"
+      }
+    },
+    "plan": {
+      "executor": "nx:run-commands",
+      "dependsOn": [
+        {
+          "projects": ["web"],
+          "target": "build"
+        }
+      ],
+      "options": {
+        "command": "terraform plan",
+        "cwd": "infra"
+      }
+    },
+    "apply": {
+      "executor": "nx:run-commands",
+      "dependsOn": [
+        {
+          "projects": ["web"],
+          "target": "build"
+        }
+      ],
+      "options": {
+        "command": "terraform apply",
+        "cwd": "infra"
+      }
+    },
+    "output": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "terraform output",
+        "cwd": "infra"
+      }
+    }
+  }
+}

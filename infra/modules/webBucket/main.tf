@@ -1,12 +1,24 @@
 locals {
   content_types = {
-    html = "text/html"
-    css  = "text/css"
-    js   = "application/javascript"
-    jpeg = "image/jpeg"
+    html        = "text/html"
+    css         = "text/css"
+    js          = "application/javascript"
+    mjs         = "application/javascript"
+    json        = "application/json"
+    map         = "application/json"
+    svg         = "image/svg+xml"
+    png         = "image/png"
+    jpg         = "image/jpeg"
+    jpeg        = "image/jpeg"
+    webp        = "image/webp"
+    ico         = "image/x-icon"
+    woff        = "font/woff"
+    woff2       = "font/woff2"
+    txt         = "text/plain"
+    webmanifest = "application/manifest+json"
   }
 
-  file_path = "${path.root}/src"
+  file_path = var.website_source_path
 }
 
 resource "aws_s3_bucket" "website_host_bucket" {

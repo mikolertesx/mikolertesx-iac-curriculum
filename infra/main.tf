@@ -22,6 +22,8 @@ module "website_s3" {
   source = "./modules/webBucket"
 
   s3_bucket_name = local.s3_bucket_name
+  # Built by `npx nx build web` → apps/web/dist
+  website_source_path = abspath("${path.root}/../apps/web/dist")
 }
 
 module "cloudfrontDistribution" {
