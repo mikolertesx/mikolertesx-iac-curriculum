@@ -1,9 +1,7 @@
 import Section from "../components/Section"
 
 const EducationSection = () => {
-    return <Section>
-        <h2>Education</h2>
-
+    return <Section title="Education">
         <article className="entry">
             <div className="entry-header">
                 <h3>B.S. Mechatronics Engineering</h3>

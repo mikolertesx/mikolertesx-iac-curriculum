@@ -1,9 +1,7 @@
 import Section from "../components/Section"
 
 const ExperienceSection = () => {
-    return <Section>
-        <h2>Experience</h2>
-
+    return <Section title="Experience">
         <article className="entry">
             <div className="entry-header">
                 <h3>Frontend Developer</h3>

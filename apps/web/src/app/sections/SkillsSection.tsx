@@ -1,8 +1,7 @@
 import Section from "../components/Section"
 
 const SkillsSection = () => {
-    return <Section>
-        <h2>Skills</h2>
+    return <Section title="Skills">
         <ul className="skills">
             <li>JavaScript</li>
             <li>TypeScript</li>

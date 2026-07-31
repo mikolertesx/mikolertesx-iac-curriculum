@@ -1,8 +1,7 @@
 import Section from "../components/Section";
 
 const SummarySection = () => {
-    return <Section>
-        <h2>Summary</h2>
+    return <Section title="Summary">
         <p>
             Frontend developer with experience shipping React applications in
             large, multi-team environments. I build UI from product
